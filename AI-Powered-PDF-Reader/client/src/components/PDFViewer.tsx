@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText, X, AlertCircle } from 'lucide-react';
 
-// Define types for the PDF data
+//  PDF data type
 interface PDFData {
   file: File;
   name: string;
@@ -29,16 +29,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
 
-      // Simulate text extraction (in real app, use PDF.js)
       setTimeout(() => {
-        const mockText = `Sample extracted text from ${pdfData.name}.\n\nThis is a demonstration of the PDF viewer component. In a production environment, you would use PDF.js library to:\n\n1. Parse the PDF file\n2. Extract text content from each page\n3. Render the PDF for viewing\n4. Enable text-to-speech functionality\n\nThe extracted text would then be passed to the AI chatbot for context-aware question answering.`;
+        const mockText = `Sample extracted text from ${pdfData.name}.\n This is for the AI chatbot extraction`;
         
         setExtractedText(mockText);
         onTextExtracted?.(mockText);
         setIsLoading(false);
       }, 1500);
 
-      // Cleanup function to revoke object URL
       return () => {
         URL.revokeObjectURL(objectUrl);
       };
@@ -115,7 +113,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
           </div>
         </div>
 
-        {/* Extracted Text Preview (for development) */}
+        {/* Extracted Text Preview */}
         {extractedText && (
           <div className="p-4 bg-gray-50 border-t">
             <details className="cursor-pointer">
