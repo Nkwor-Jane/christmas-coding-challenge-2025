@@ -2,6 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FileText, X, AlertCircle } from 'lucide-react';
 import AudioControls from './AudioControls';
 
+import * as pdfjsLib from 'pdfjs-dist';
+import { pdfWorkerUrl }from '../utils/pdfWorker';
+
+// Enable worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
+
 // Define types for the PDF data
 interface PDFData {
   file: File;
@@ -22,7 +29,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
   const [error, setError] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
   const [pdfObjectUrl, setPdfObjectUrl] = useState<string>('');
-  const [currentReadingPosition, setCurrentReadingPosition] = useState<number>(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -30,24 +36,44 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
       // Create object URL for the PDF file
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
-
-      // Simulate text extraction (in real app, use PDF.js)
-      setTimeout(() => {
-        const mockText = `Welcome to the AI-Powered PDF Reader. This is a demonstration of the PDF viewer component with text-to-speech capabilities. 
-
-The system allows you to listen to your documents with natural voice synthesis. You can control the playback speed, adjust the volume, and pause at any time to ask questions.`;
-        
-        setExtractedText(mockText);
-        onTextExtracted?.(mockText);
+     extractPDFText(pdfData.file)
+      .then((text) =>{
+        setExtractedText(text);
+        onTextExtracted?.(text);
+      })
+      .catch((err)=>{
+        console.error(err);
+        setError('Failed to extract text from PDF.')
+      })
+      .finally(() =>{
         setIsLoading(false);
-      }, 1500);
-
-      // Cleanup function to revoke object URL
+      })
       return () => {
         URL.revokeObjectURL(objectUrl);
       };
     }
-  }, [pdfData, onTextExtracted]);
+  }, [pdfData]);
+
+  // Extract PDF
+  const extractPDFText = async (file: File): Promise<string> => {
+    const typedArray = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+
+      const pageText = content.items
+        .map((item: any) => item.str)
+        .join(' ');
+
+      fullText += pageText + '\n\n';
+    }
+
+    return fullText;
+  };
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -57,9 +83,9 @@ The system allows you to listen to your documents with natural voice synthesis. 
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const handleReadingPositionChange = (position: number) => {
-    setCurrentReadingPosition(position);
-  };
+  // const handleReadingPositionChange = (position: number) => {
+  //   // setCurrentReadingPosition(position);
+  // };
 
   if (!pdfData) return null;
 
@@ -131,7 +157,6 @@ The system allows you to listen to your documents with natural voice synthesis. 
       {extractedText && (
         <AudioControls 
           text={extractedText} 
-          onPositionChange={handleReadingPositionChange}
         />
       )}
 
@@ -140,7 +165,7 @@ The system allows you to listen to your documents with natural voice synthesis. 
         <div className="bg-white rounded-lg shadow-lg p-4">
           <details className="cursor-pointer">
             <summary className="font-semibold text-gray-700 mb-2">
-              Full Text Preview (for Development)
+              Full Text Preview
             </summary>
             <div className="mt-2 p-4 bg-gray-50 rounded border text-sm text-gray-600 max-h-60 overflow-auto whitespace-pre-wrap">
               {extractedText}

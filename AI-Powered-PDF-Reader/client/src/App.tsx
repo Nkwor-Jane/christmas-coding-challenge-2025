@@ -13,7 +13,6 @@ interface PDFData {
 function App() {
   const [pdfData, setPdfData] = useState<PDFData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string>('');
 
   const handlePDFUpload = (data: PDFData): void => {
     setPdfData(data);
@@ -28,11 +27,11 @@ function App() {
 
   const handleClose = (): void => {
     setPdfData(null);
-    setExtractedText('');
+    // setExtractedText('');
   };
 
   const handleTextExtracted = (text: string): void => {
-    setExtractedText(text);
+    // setExtractedText(text);
     console.log('Extracted text ready for TTS and AI:', text);
   };
   
