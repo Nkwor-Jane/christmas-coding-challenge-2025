@@ -24,55 +24,76 @@ interface PDFViewerProps {
   onTextExtracted?: (text: string) => void;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
   const [pdfObjectUrl, setPdfObjectUrl] = useState<string>('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [pagesText, setPagesText] = useState<string[]>([]);
+  const [selectedPage, setSelectedPage] = useState<number>(0);
+
 
   useEffect(() => {
     if (pdfData?.file) {
       // Create object URL for the PDF file
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
-     extractPDFText(pdfData.file)
-      .then((text) =>{
-        setExtractedText(text);
-        onTextExtracted?.(text);
-      })
-      .catch((err)=>{
-        console.error(err);
-        setError('Failed to extract text from PDF.')
-      })
-      .finally(() =>{
-        setIsLoading(false);
-      })
-      return () => {
-        URL.revokeObjectURL(objectUrl);
-      };
-    }
-  }, [pdfData]);
+      extractPDFText(pdfData.file)
+        .then(({pages}) =>{
+          setPagesText(pages);
+          setExtractedText(pages[0]); // default: start at page 1
+        })
+        .catch((err)=>{
+          console.error(err);
+          setError('Failed to extract text from PDF.')
+        })
+        .finally(() =>{
+          setIsLoading(false);
+        })
+        return () => {
+          URL.revokeObjectURL(objectUrl);
+        };
+      }
+    }, [pdfData]);
 
   // Extract PDF
-  const extractPDFText = async (file: File): Promise<string> => {
+  const extractPDFText = async (file: File): Promise<{ pages: string[] }> => {
     const typedArray = new Uint8Array(await file.arrayBuffer());
     const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
 
-    let fullText = '';
+    const pages: string[] = [];
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
 
-      const pageText = content.items
-        .map((item: any) => item.str)
-        .join(' ');
+      let text = '';
+      let lastX = 0;
 
-      fullText += pageText + '\n\n';
+      for (const item of content.items as any[]){
+        const str =  item.str;
+        //Detetct spacing
+        const x = item.transform[4];
+        const isSpace = Math.abs(x - lastX) > 5;
+
+        if (isSpace) text += ' ';
+
+        text += str;
+        lastX = x;
+      }
+
+      text = text
+        .replace(/\s+([.,!?;:])/g, '$1')      // remove space before punctuation
+        .replace(/([({[])\s+/g, '$1')         // remove space after opening bracket
+        .replace(/\s+([)}\]])/g, '$1')        // remove space before closing bracket
+        .replace(/\s{2,}/g, ' ')              // collapse double spaces
+        .trim();
+
+      pages.push(text);
     }
 
-    return fullText;
+    return { pages };
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -82,10 +103,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
-
-  // const handleReadingPositionChange = (position: number) => {
-  //   // setCurrentReadingPosition(position);
-  // };
 
   if (!pdfData) return null;
 
@@ -148,8 +165,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
                   }}
                 />
               )}
+
             </div>
           </div>
+          {/* Page Selector*/}
+          {pagesText.length > 0 && (
+            <div className="p-4 bg-white rounded-lg shadow">
+              <label className="block font-semibold text-gray-700 mb-2">
+                Start reading from page:
+              </label>
+
+              <select
+                value={selectedPage}
+                onChange={(e) => {
+                  const pageIndex = Number(e.target.value);
+                  setSelectedPage(pageIndex);
+                  setExtractedText(pagesText[pageIndex]);
+                }}
+                className="w-full border p-3 rounded bg-gray-800"
+              >
+                {pagesText.map((_, i) => (
+                  <option key={i} value={i} className="text-white">
+                    Page {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
