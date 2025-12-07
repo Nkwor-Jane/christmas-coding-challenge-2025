@@ -4,6 +4,7 @@ import AudioControls from './AudioControls';
 
 import * as pdfjsLib from 'pdfjs-dist';
 import { pdfWorkerUrl }from '../utils/pdfWorker';
+import ChatInterface from './ChatInterface';
 
 // Enable worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -196,11 +197,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
       </div>
 
       {/* Audio Controls Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {extractedText && (
         <AudioControls 
           text={extractedText} 
         />
       )}
+
+      <ChatInterface/>
+      </div>
 
       {/* Extracted Text Preview */}
       {extractedText && (
