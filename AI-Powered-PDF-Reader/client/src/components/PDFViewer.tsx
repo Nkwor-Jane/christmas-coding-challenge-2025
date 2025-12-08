@@ -33,6 +33,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [pagesText, setPagesText] = useState<string[]>([]);
   const [selectedPage, setSelectedPage] = useState<number>(0);
+  const [isExtracting, setIsExtracting] = useState<boolean>(false);
+  const [fullPDFText, setFullPDFText] = useState<string>('');
 
 
   useEffect(() => {
@@ -40,23 +42,34 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
       // Create object URL for the PDF file
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
+      
+      // Extract text from PDF using PDF.js
+      setIsExtracting(true);
       extractPDFText(pdfData.file)
-        .then(({pages}) =>{
+        .then(({pages}) => {
           setPagesText(pages);
-          setExtractedText(pages[0]); // default: start at page 1
+          setExtractedText(pages[0]); // For TTS - start at page 1
+          
+          //Combine all pages for chat context
+          const combinedText = pages.map((text, idx) => 
+            `--- Page ${idx + 1} ---\n\n${text}`
+          ).join('\n\n');
+          setFullPDFText(combinedText);
         })
-        .catch((err)=>{
+        .catch((err) => {
           console.error(err);
           setError('Failed to extract text from PDF.')
         })
-        .finally(() =>{
+        .finally(() => {
           setIsLoading(false);
-        })
-        return () => {
-          URL.revokeObjectURL(objectUrl);
-        };
-      }
-    }, [pdfData]);
+          setIsExtracting(false);
+        });
+        
+      return () => {
+        URL.revokeObjectURL(objectUrl);
+      };
+    }
+  }, [pdfData]);
 
   // Extract PDF
   const extractPDFText = async (file: File): Promise<{ pages: string[] }> => {
@@ -204,18 +217,32 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
         />
       )}
 
-      <ChatInterface/>
+       <ChatInterface 
+          pdfContext={fullPDFText}
+          pdfName={pdfData.name}
+          isEnabled={!!fullPDFText && !isExtracting}
+        />
       </div>
+      
+      {/* Status message */}
+      {!fullPDFText && !isExtracting && !error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800 text-sm">
+            No text could be extracted from this PDF. It may be a scanned document or image-based PDF.
+          </p>
+        </div>
+      )}
 
-      {/* Extracted Text Preview */}
-      {extractedText && (
+      {/* Extracted Text Preview -- Preview the full pdf  */}
+      {fullPDFText && (
         <div className="bg-white rounded-lg shadow-lg p-4">
           <details className="cursor-pointer">
-            <summary className="font-semibold text-gray-700 mb-2">
-              Full Text Preview
+            <summary className="font-semibold text-gray-700 mb-2 flex items-center justify-between">
+              <span>Full PDF Text ({fullPDFText.split(' ').length} words, {pagesText.length} pages)</span>
+              <span className="text-sm text-gray-500">Click to expand</span>
             </summary>
             <div className="mt-2 p-4 bg-gray-50 rounded border text-sm text-gray-600 max-h-60 overflow-auto whitespace-pre-wrap">
-              {extractedText}
+              {fullPDFText}
             </div>
           </details>
         </div>
