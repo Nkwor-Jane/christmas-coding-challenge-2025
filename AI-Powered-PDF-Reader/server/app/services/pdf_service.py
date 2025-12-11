@@ -2,10 +2,15 @@ import PyPDF2
 from io import BytesIO
 from typing import Dict, Optional
 import uuid
+import json
+import os
+from pathlib import Path
 
 class PDFService:
     def __init__(self):
-        self.pdf_cache: Dict[str, Dict] = {}
+        # Create storage directory
+        self.storage_dir = Path("pdf_storage")
+        self.storage_dir.mkdir(exist_ok=True)
     
     async def extract_text_from_pdf(self, file_content: bytes, filename: str) -> Dict:
         """Extract text from PDF file"""
@@ -28,14 +33,22 @@ class PDFService:
             # Generate unique ID for this PDF
             pdf_id = str(uuid.uuid4())
             
-            # Cache the extracted text
-            self.pdf_cache[pdf_id] = {
+            # Save to file instead of memory
+            pdf_data = {
                 "filename": filename,
                 "full_text": full_text,
                 "page_texts": page_texts,
                 "num_pages": len(pdf_reader.pages),
                 "word_count": len(full_text.split())
             }
+            
+            # Save to disk
+            storage_path = self.storage_dir / f"{pdf_id}.json"
+            with open(storage_path, 'w', encoding='utf-8') as f:
+                json.dump(pdf_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"PDF saved to disk: {storage_path}")
+            print(f"PDF ID: {pdf_id}")
             
             return {
                 "success": True,
@@ -47,18 +60,48 @@ class PDFService:
             }
             
         except Exception as e:
+            print(f"Error extracting PDF: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
             }
     
     def get_pdf_text(self, pdf_id: str) -> Optional[str]:
-        """Retrieve cached PDF text"""
-        pdf_data = self.pdf_cache.get(pdf_id)
-        return pdf_data["full_text"] if pdf_data else None
+        """Retrieve PDF text from disk"""
+        try:
+            storage_path = self.storage_dir / f"{pdf_id}.json"
+            
+            if not storage_path.exists():
+                print(f"Available PDFs: {list(self.storage_dir.glob('*.json'))}")
+                return None
+            
+            with open(storage_path, 'r', encoding='utf-8') as f:
+                pdf_data = json.load(f)
+            
+            print(f"PDF loaded from disk: {pdf_id}")
+            return pdf_data["full_text"]
+            
+        except Exception as e:
+            print(f"Error reading PDF: {str(e)}")
+            return None
     
     def get_pdf_info(self, pdf_id: str) -> Optional[Dict]:
-        """Get PDF metadata"""
-        return self.pdf_cache.get(pdf_id)
+        """Get PDF metadata from disk"""
+        try:
+            storage_path = self.storage_dir / f"{pdf_id}.json"
+            
+            if not storage_path.exists():
+                return None
+            
+            with open(storage_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+                
+        except Exception as e:
+            print(f"Error reading PDF info: {str(e)}")
+            return None
+    
+    def list_cached_pdfs(self) -> list:
+        """List all cached PDF IDs"""
+        return [f.stem for f in self.storage_dir.glob('*.json')]
 
 pdf_service = PDFService()

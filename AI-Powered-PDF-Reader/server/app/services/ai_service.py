@@ -54,16 +54,17 @@ Cite specific sections or sentences when relevant.
                 "content": user_message
             })
 
-            response = self.client.responses.create(
-                model="gpt-4.1",   # you can switch to "gpt-4.1-mini" or "o3"
-                max_output_tokens=2000,
-                input=[
+            response = self.client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
                     {"role": "system", "content": system_prompt},
-                    *formatted_history,
+                    *formatted_history
                 ],
+                max_tokens=2000
             )
 
-            answer = response.output_text
+
+            answer = response.choices[0].message.content
 
             return {
                 "success": True,
