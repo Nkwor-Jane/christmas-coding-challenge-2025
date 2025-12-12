@@ -4,6 +4,7 @@ from typing import List
 class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str = ""
+    ELEVEN_LABS_API_KEY: str = ""
     
     # Server
     host: str = "0.0.0.0"
