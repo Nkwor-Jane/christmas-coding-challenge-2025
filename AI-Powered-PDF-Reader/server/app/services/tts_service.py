@@ -13,7 +13,7 @@ load_dotenv()
 class TTSService:
     def __init__(self):
         self.elevenlabs_client = ElevenLabs(
-            api_key=os.getenv("ELEVENLABS_API_KEY")
+            api_key=settings.ELEVEN_LABS_API_KEY
         )
     
     async def generate_speech(self, text: str, provider: str = "elevenlabs", voice: str = "Rachel", speed: float = 1.0) -> Dict:
@@ -70,8 +70,26 @@ class TTSService:
             print(f"Voice: {voice}")
             
             # Voice ID mapping 
-            voice_ids = {
-                 
+            voice_ids = { 
+                "Bill": "pqHfZKP75CvOlQylNhV4",
+                "Lily":"pFZP5JQG7iQjIQuC4Bku",
+                "Daniel": "onwK4e9ZLuTAKqWW03F9",
+                "Brian": "nPczCjzI2devNBz1zQrb",
+                "Chris": "iP95p4xoKVk53GoZ742B",
+                "Eric": "cjVigY5qzO86Huf0OWal",
+                "Jessica":"cgSgspJ2msm6clMCkdW9",
+                "Will": "bIHbv24MWmeRgasZH58o",
+                "Matilda": "rExE9yKIg1WjnnlVkGX",
+                "Alice": "Xb7hH8MSUJpSbSDYk0k2",
+                "Liam": "TX3LPaxmHKxFdv7VOQHJ",
+                "Harry": "SOYHLrjzK2X1ezoPC6cr",
+                "River": "SAz9YHcvj6GT2YYXdXww",
+                "Callum": "N2lVS1w4EtoT3dr4eOWO",
+                "George": "JBFqnCBsd6RMkjVDRZzb",
+                "Charlie": "IKne3meq5aSn9XLyUdCD",
+                "Laura": "FGY2WhTYpPnrIDTdsKH5",
+                "Sarah": "EXAVITQu4vr4xnSDxMaL",
+                "Roger": "CwhRBWXzGAHq8TQ4Fs17",
             }
             
             # Get voice_id 
