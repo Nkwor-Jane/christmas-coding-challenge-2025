@@ -53,12 +53,3 @@ async def get_pdf_text(pdf_id: str):
         pages=pdf_info["num_pages"],
         word_count=pdf_info["word_count"]
     )
-@router.get("/cache/debug")
-async def debug_cache():
-    """
-    Debug endpoint to see cached PDFs
-    """
-    return {
-        "cached_pdf_ids": list(pdf_service.pdf_cache.keys()),
-        "total_cached": len(pdf_service.pdf_cache)
-    }

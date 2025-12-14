@@ -35,6 +35,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
   const [selectedPage, setSelectedPage] = useState<number>(0);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [fullPDFText, setFullPDFText] = useState<string>('');
+  const [pdfId, setPdfId] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -45,6 +46,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
       
       // Extract text from PDF using PDF.js
       setIsExtracting(true);
+      uploadPDFToBackend(pdfData.file)
+        .then(id => {
+          setPdfId(id);
+          console.log('PDF uploaded, ID:', id);
+        })
+        .catch(err => {
+          console.error('Failed to upload PDF:', err);
+      });
       extractPDFText(pdfData.file)
         .then(({pages}) => {
           setPagesText(pages);
@@ -70,6 +79,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
       };
     }
   }, [pdfData]);
+
+  // uPLOAD PDF TO BACKEND
+  const uploadPDFToBackend = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('http://localhost:8000/api/pdf/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload PDF');
+    }
+
+    const data = await response.json();
+    return data.pdf_id;
+  };
 
   // Extract PDF
   const extractPDFText = async (file: File): Promise<{ pages: string[] }> => {
@@ -220,6 +247,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
        <ChatInterface 
           pdfContext={fullPDFText}
           pdfName={pdfData.name}
+          pdfId={pdfId || undefined} 
           isEnabled={!!fullPDFText && !isExtracting}
         />
       </div>

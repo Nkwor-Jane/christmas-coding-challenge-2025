@@ -126,8 +126,9 @@ This project is licensed under the MIT License
 ## 🙏 Acknowledgments
 
 - PDF.js team for the excellent PDF parsing library
-- Anthropic for Claude AI API
-- Web Speech API contributors
+- OpenAI API
+- Nebius Token Factory
+- ElevenLabs for natural voices
 - All open-source contributors
 
 ## 📧 Contact

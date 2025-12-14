@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     allowed_origins: List[str] = ["http://localhost:5173"]
     
     # File Upload
-    max_file_size: int = 10485760  # 10MB
+    max_file_size: int = 10485760  # MAX 10MB
     allowed_extensions: List[str] = [".pdf"]
     
     class Config:

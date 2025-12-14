@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
-from datetime import datetime
+from typing import Optional, List, Union
 
 class PDFUploadResponse(BaseModel):
     success: bool
@@ -24,7 +23,10 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     pdf_id: str
     message: str
-    conversation_history: Optional[List[ChatMessage]] = []
+    conversation_history: Optional[List[Union[ChatMessage, dict]]] = []
+
+    class Config:
+        from_attributes = True
 
 class ChatResponse(BaseModel):
     success: bool

@@ -10,12 +10,14 @@ interface Message {
 interface ChatInterfaceProps {
   pdfContext: string;
   pdfName: string;
+  pdfId?: string;
   isEnabled?: boolean;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
   pdfContext, 
   pdfName,
+  pdfId,
   isEnabled = true 
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,7 +39,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [isEnabled]);
 
-  const sendMessage = async () => {
+    const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !isEnabled) return;
 
     const userMessage: Message = {
@@ -46,70 +48,49 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       timestamp: new Date()
     };
 
-    // Add user message to chat
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
     setError(null);
 
     try {
-      // Call Claude API or OpenAI 
-      const response = await fetch('', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          system: `You are a helpful AI assistant analyzing a PDF document titled "${pdfName}".
-
-          Here is the full content of the PDF:
-
-          <pdf_content>
-          ${pdfContext.slice(0, 50000)}
-          </pdf_content>
-
-          Answer questions about this PDF accurately and concisely. If the answer isn't in the PDF, say so clearly. Cite specific parts of the document when relevant.`,
-          messages: [
-            ...messages.map(msg => ({
+      if (pdfId) {
+        const response = await fetch('http://localhost:8000/api/chat/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pdf_id: pdfId,
+            message: userMessage.content,
+            conversation_history: messages.map(msg => ({
               role: msg.role,
               content: msg.content
-            })),
-            {
-              role: 'user',
-              content: userMessage.content
-            }
-          ]
-        })
-      });
+            }))
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `API error: ${response.status}`);
+        }
 
-      const data = await response.json();
-      
-      // Extract text from response
-      const assistantText = data.content
-        .filter((item: any) => item.type === 'text')
-        .map((item: any) => item.text)
-        .join('\n');
+        const data = await response.json();
+        
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: data.response,
+          timestamp: new Date()
+        };
 
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: assistantText,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+        setMessages(prev => [...prev, assistantMessage]);
+      } 
     } catch (err) {
       console.error('Chat error:', err);
       setError('Failed to get response. Please try again.');
       
-      // Remove the user message if there was an error
       setMessages(prev => prev.slice(0, -1));
-      setInputMessage(userMessage.content); // Restore user's message
+      setInputMessage(userMessage.content);
     } finally {
       setIsLoading(false);
     }
