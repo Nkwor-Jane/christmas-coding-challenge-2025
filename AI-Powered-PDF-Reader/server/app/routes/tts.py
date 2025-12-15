@@ -7,7 +7,7 @@ router = APIRouter(prefix="/api/tts", tags=["TTS"])
 
 class TTSRequest(BaseModel):
     text: str
-    voice: str = "Rachel"
+    voice: str = "Jessica"
     speed: float = 1.0
     provider: str = "elevenlabs"
 
