@@ -35,7 +35,6 @@ function App() {
         const hoursSince = (now - uploadTime) / (1000 * 60 * 60);
         
         if (hoursSince < 24) {
-          console.log('Restoring PDF from localStorage:', parsed.name);
           setPdfId(parsed.pdfId || null);
         } else {
           // Clear old data
@@ -58,7 +57,6 @@ function App() {
   const handlePDFUpload = (data: PDFData): void => {
     setPdfData(data);
     setError(null);
-    console.log('PDF uploaded:', data.name, data.size);
 
     // Save to localStorage (without File object)
     const toSave: StoredPDFData = {
@@ -91,10 +89,6 @@ function App() {
     setPdfData(null);
     setPdfId(null);
     localStorage.removeItem('currentPDF');
-  };
-
-  const handleTextExtracted = (text: string): void => {
-    console.log('Extracted text ready for TTS and AI:', text);
   };
   
   return (
@@ -150,7 +144,6 @@ function App() {
           <PDFViewer 
             pdfData={pdfData}
             onClose={handleClose}
-            onTextExtracted={handleTextExtracted}
             onPDFIdReceived={handlePDFIdReceived}
           />
         )}

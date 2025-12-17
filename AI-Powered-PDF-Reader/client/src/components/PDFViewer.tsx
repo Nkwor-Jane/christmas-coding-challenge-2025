@@ -5,6 +5,7 @@ import AudioControls from './AudioControls';
 import * as pdfjsLib from 'pdfjs-dist';
 import { pdfWorkerUrl }from '../utils/pdfWorker';
 import ChatInterface from './ChatInterface';
+import ThemeToggle from './ThemeToggle';
 
 // Enable worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -55,7 +56,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         .then(([id, { pages }]) => {
           // Handle PDF upload
           setPdfId(id);
-          console.log('PDF uploaded, ID:', id);
+          // console.log('PDF uploaded, ID:', id);
           
           // Notify parent component
           if (onPDFIdReceived) {
@@ -147,7 +148,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('currentPDF', JSON.stringify(toSave));
-      console.log('Saved PDF to localStorage');
     } catch (err) {
       console.error('Failed to save to localStorage:', err);
     }
@@ -228,6 +228,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
 
   return (
     <div className="space-y-4">
+      {/* Theme Toggler */}
+      <ThemeToggle />
       {/* PDF Viewer Section */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Header */}
