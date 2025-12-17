@@ -23,9 +23,10 @@ interface PDFViewerProps {
   pdfData: PDFData | null;
   onClose: () => void;
   onTextExtracted?: (text: string) => void;
+  onPDFIdReceived?: (pdfId: string) => void;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted, onPDFIdReceived }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
@@ -38,36 +39,55 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
   const [pdfId, setPdfId] = useState<string | null>(null);
 
 
-  useEffect(() => {
+    useEffect(() => {
     if (pdfData?.file) {
       // Create object URL for the PDF file
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
       
-      // Extract text from PDF using PDF.js
       setIsExtracting(true);
-      uploadPDFToBackend(pdfData.file)
-        .then(id => {
+
+      // Upload PDF to backend and extract text in parallel
+      Promise.all([
+        uploadPDFToBackend(pdfData.file),
+        extractPDFText(pdfData.file)
+      ])
+        .then(([id, { pages }]) => {
+          // Handle PDF upload
           setPdfId(id);
           console.log('PDF uploaded, ID:', id);
-        })
-        .catch(err => {
-          console.error('Failed to upload PDF:', err);
-      });
-      extractPDFText(pdfData.file)
-        .then(({pages}) => {
-          setPagesText(pages);
-          setExtractedText(pages[0]); // For TTS - start at page 1
           
-          //Combine all pages for chat context
+          // Notify parent component
+          if (onPDFIdReceived) {
+            onPDFIdReceived(id);
+          }
+
+          // Handle text extraction
+          setPagesText(pages);
+          setExtractedText(pages[0]);
+          
           const combinedText = pages.map((text, idx) => 
             `--- Page ${idx + 1} ---\n\n${text}`
           ).join('\n\n');
           setFullPDFText(combinedText);
+
+          // Notify parent of extracted text
+          if (onTextExtracted) {
+            onTextExtracted(combinedText);
+          }
+
+          // Save to localStorage for persistence
+          saveToLocalStorage({
+            pdfId: id,
+            name: pdfData.name,
+            size: pdfData.size,
+            pages: pages.length,
+            fullText: combinedText
+          });
         })
         .catch((err) => {
-          console.error(err);
-          setError('Failed to extract text from PDF.')
+          console.error('Error processing PDF:', err);
+          setError('Failed to process PDF.');
         })
         .finally(() => {
           setIsLoading(false);
@@ -78,9 +98,62 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
         URL.revokeObjectURL(objectUrl);
       };
     }
+  }, [pdfData, onTextExtracted, onPDFIdReceived]);
+
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const loadSavedPDF = () => {
+      const savedPDF = localStorage.getItem('currentPDF');
+      if (savedPDF && !pdfData) {
+        try {
+          const parsed = JSON.parse(savedPDF);
+          console.log('Found saved PDF in localStorage:', parsed.name);
+          
+          // Check if it's recent (within 24 hours)
+          const savedTime = new Date(parsed.savedAt).getTime();
+          const now = new Date().getTime();
+          const hoursSince = (now - savedTime) / (1000 * 60 * 60);
+          
+          if (hoursSince < 24) {
+            setPdfId(parsed.pdfId);
+            setFullPDFText(parsed.fullText);
+            console.log('Restored PDF data from localStorage');
+          } else {
+            console.log('Saved PDF is too old, clearing...');
+            localStorage.removeItem('currentPDF');
+          }
+        } catch (err) {
+          console.error('Failed to load saved PDF:', err);
+          localStorage.removeItem('currentPDF');
+        }
+      }
+    };
+
+    loadSavedPDF();
   }, [pdfData]);
 
-  // uPLOAD PDF TO BACKEND
+  // Save to localStorage
+  const saveToLocalStorage = (data: {
+    pdfId: string;
+    name: string;
+    size: number;
+    pages: number;
+    fullText: string;
+  }) => {
+    try {
+      const toSave = {
+        ...data,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem('currentPDF', JSON.stringify(toSave));
+      console.log('Saved PDF to localStorage');
+    } catch (err) {
+      console.error('Failed to save to localStorage:', err);
+    }
+  };
+
+  // UPLOAD PDF TO BACKEND
   const uploadPDFToBackend = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -145,6 +218,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
+  const handleClose = () => {
+    // Clear localStorage when closing
+    localStorage.removeItem('currentPDF');
+    onClose();
+  };
+
   if (!pdfData) return null;
 
   return (
@@ -161,7 +240,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose}) => {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
             title="Close PDF"
           >

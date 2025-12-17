@@ -10,3 +10,5 @@ openai
 gtts
 redis
 elevenlabs
+pymongo
+motor

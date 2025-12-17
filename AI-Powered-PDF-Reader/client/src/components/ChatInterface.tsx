@@ -14,11 +14,10 @@ interface ChatInterfaceProps {
   isEnabled?: boolean;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
-  pdfContext, 
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
   pdfName,
   pdfId,
-  isEnabled = true 
+  isEnabled = true
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');

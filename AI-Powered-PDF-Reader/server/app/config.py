@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str = ""
     ELEVEN_LABS_API_KEY: str = ""
+    MONOGO_DB_CONNECTION_STRING: str = ""
     
     # Server
     host: str = "0.0.0.0"
