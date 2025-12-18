@@ -268,26 +268,26 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
   const progress = sentences.length > 0 ? (currentSentenceIndex / sentences.length) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">Audio Controls</h3>
-        <span className="text-sm text-gray-500">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Audio Controls</h3>
+        <span className="text-sm text-gray-500 dark:text-gray-300">
           {currentSentenceIndex + 1} / {sentences.length} sentences
         </span>
       </div>
 
       {/* Voice Provider Toggle */}
-      <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-        <Mic className="w-5 h-5 text-gray-600" />
+      <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-200 rounded-lg">
+        <Mic className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         <div className="flex-1">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={useElevenLabs}
               onChange={(e) => setUseElevenLabs(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 dark:text-blue-100 rounded focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-gray-600"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-100">
               Use Premium Voice (ElevenLabs)
             </span>
           </label>
@@ -297,11 +297,11 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       {/* Voice Selection (ElevenLabs Voices) */}
       {useElevenLabs && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Select Voice</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-100">Select Voice</label>
           <select
             value={selectedVoice}
             onChange={(e) => setSelectedVoice(e.target.value)}
-            className="w-full p-2 border border-gray-300 bg-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            className="w-full p-2 border border-gray-300 bg-gray-400 dark:border-gray-600 dark:bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
           >
             {elevenLabsVoices.map((voice) => (
               <option key={voice.id} value={voice.id}>
@@ -313,24 +313,24 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       )}
 
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+          className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Current Sentence Display */}
-      <div className="bg-blue-50 rounded-lg p-4 min-h-[80px]">
-        <p className="text-sm text-gray-700 leading-relaxed">
+      <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4 min-h-[80px]">
+        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
           {sentences[currentSentenceIndex] || 'No text to read...'}
         </p>
       </div>
 
       {/* Loading Indicator */}
       {isLoadingAudio && (
-        <div className="flex items-center justify-center gap-2 text-blue-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
           <span className="text-sm">Generating audio...</span>
         </div>
       )}
@@ -340,38 +340,38 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
         <button
           onClick={handleSkipBack}
           disabled={currentSentenceIndex === 0 || isLoadingAudio}
-          className="p-3 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Previous sentence"
         >
-          <SkipBack className="w-6 h-6 text-gray-700" />
+          <SkipBack className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         </button>
 
         {!isPlaying ? (
           <button
             onClick={handlePlay}
             disabled={isLoadingAudio}
-            className="p-4 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="p-4 rounded-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 transition-colors disabled:opacity-50"
             title="Play"
           >
-            <Play className="w-8 h-8 text-white" fill="white" />
+            <Play className="w-8 h-8 text-white dark:text-gray-300" fill="white" />
           </button>
         ) : (
           <button
             onClick={handlePause}
-            className="p-4 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors"
+            className="p-4 rounded-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-200 dark:hover:bg-blue-300 transition-colors"
             title="Pause"
           >
-            <Pause className="w-8 h-8 text-white" fill="white" />
+            <Pause className="w-8 h-8 text-white dark:text-gray-300" fill="white" />
           </button>
         )}
 
         <button
           onClick={handleSkipForward}
           disabled={currentSentenceIndex >= sentences.length - 1 || isLoadingAudio}
-          className="p-3 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Next sentence"
         >
-          <SkipForward className="w-6 h-6 text-gray-700" />
+          <SkipForward className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         </button>
       </div>
 
@@ -379,9 +379,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       <div className="grid grid-cols-2 gap-4">
         {/* Speed Control */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700  dark:text-gray-200 flex items-center justify-between">
             <span>Speed</span>
-            <span className="text-blue-600">{speed.toFixed(1)}x</span>
+            <span className="text-blue-600 dark:text-blue-100">{speed.toFixed(1)}x</span>
           </label>
           <input
             type="range"
@@ -391,26 +391,26 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
             value={speed}
             onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
             disabled={useElevenLabs}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50"
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>0.5x</span>
             <span>2.0x</span>
           </div>
           {useElevenLabs && (
-            <p className="text-xs text-gray-500">Speed control not available with ElevenLabs</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Speed control not available with ElevenLabs</p>
           )}
         </div>
 
         {/* Volume Control */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center justify-between">
             <span>Volume</span>
-            <button onClick={toggleMute} className="p-1 hover:bg-gray-100 rounded">
+            <button onClick={toggleMute} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-300 rounded">
               {isMuted ? (
-                <VolumeX className="w-5 h-5 text-gray-600" />
+                <VolumeX className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               ) : (
-                <Volume2 className="w-5 h-5 text-gray-600" />
+                <Volume2 className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               )}
             </button>
           </label>
@@ -422,9 +422,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
             value={volume}
             onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
             disabled={isMuted}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50"
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>0%</span>
             <span>100%</span>
           </div>
@@ -440,8 +440,8 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
               onClick={() => handleSpeedChange(speedOption)}
               className={`px-3 py-1 rounded-full text-sm transition-colors ${
                 speed === speedOption
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
               {speedOption}x
@@ -454,7 +454,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       {(isPlaying || isPaused) && (
         <button
           onClick={handleStop}
-          className="w-full py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium"
+          className="w-full py-2 bg-red-100 dark:bg-red-500 text-red-600 dark:text-white rounded-lg hover:bg-red-200 dark:hover:bg-red-400 transition-colors font-medium"
         >
           Stop Reading
         </button>

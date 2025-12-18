@@ -5,7 +5,6 @@ import AudioControls from './AudioControls';
 import * as pdfjsLib from 'pdfjs-dist';
 import { pdfWorkerUrl }from '../utils/pdfWorker';
 import ChatInterface from './ChatInterface';
-import ThemeToggle from './ThemeToggle';
 
 // Enable worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -228,8 +227,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
 
   return (
     <div className="space-y-4">
-      {/* Theme Toggler */}
-      <ThemeToggle />
       {/* PDF Viewer Section */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Header */}

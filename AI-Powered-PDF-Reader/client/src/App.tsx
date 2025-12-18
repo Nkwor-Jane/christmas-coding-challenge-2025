@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import PDFUploader from './components/PDFUploader';
 import PDFViewer from './components/PDFViewer';
+import ThemeToggle from './components/ThemeToggle';
 
 interface PDFData {
   name: string;
@@ -92,23 +93,24 @@ function App() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-white">
             🎧 AI-Powered PDF Reader
           </h1>
-          <p className="text-gray-600">
+          <ThemeToggle />
+          <p className="text-gray-600 dark:text-gray-300">
             Upload a PDF to listen and ask questions
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-700">{error}</p>
+          <div className="mb-6 p-4 bg-red-100  dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 dark:text-red-400" />
+            <p className="text-red-700 dark:text-red-300">{error}</p>
           </div>
         )}
 
@@ -123,20 +125,20 @@ function App() {
             
             {/* Features Info */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+              <div className="bg-white p-4 rounded-lg shadow-sm text-center dark:bg-gray-800">
                 <div className="text-3xl mb-2">🔊</div>
-                <h3 className="font-semibold text-gray-800 mb-1">Listen</h3>
-                <p className="text-sm text-gray-600">Text-to-speech narration</p>
+                <h3 className="font-semibold text-gray-800 mb-1 dark:text-white">Listen</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Text-to-speech narration</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+              <div className="bg-white p-4 rounded-lg shadow-sm text-center dark:bg-gray-800">
                 <div className="text-3xl mb-2">💬</div>
-                <h3 className="font-semibold text-gray-800 mb-1">Ask</h3>
-                <p className="text-sm text-gray-600">AI-powered Q&A</p>
+                <h3 className="font-semibold text-gray-800 mb-1 dark:text-white">Ask</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered Q&A</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+              <div className="bg-white p-4 rounded-lg shadow-sm text-center dark:bg-gray-800">
                 <div className="text-3xl mb-2">📖</div>
-                <h3 className="font-semibold text-gray-800 mb-1">Learn</h3>
-                <p className="text-sm text-gray-600">Interactive reading</p>
+                <h3 className="font-semibold text-gray-800 mb-1 dark:text-white">Learn</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Interactive reading</p>
               </div>
             </div>
           </div>
