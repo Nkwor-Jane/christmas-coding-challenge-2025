@@ -287,7 +287,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
               onChange={(e) => setUseElevenLabs(e.target.checked)}
               className="w-4 h-4 text-blue-600 dark:text-blue-100 rounded focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-gray-600"
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-100">
+            <span className="text-sm font-medium text-gray-700">
               Use Premium Voice (ElevenLabs)
             </span>
           </label>

@@ -111,7 +111,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onPDFUpload, onError }) => {
                 </div>
                 
                 <button
-                    className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                    className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors cursor-pointer"
                     onClick={(e) => {
                         e.stopPropagation();
                         handleClick();

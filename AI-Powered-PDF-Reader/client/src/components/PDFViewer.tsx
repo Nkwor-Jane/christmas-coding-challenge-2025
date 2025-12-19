@@ -266,8 +266,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
           )}
 
           {/* PDF Display */}
-          <div className="bg-gray-100 p-4" style={{ height: '400px' }}>
-            <div className="bg-white rounded shadow-md h-full overflow-hidden">
+          <div className="bg-gray-100 dark:bg-gray-700 p-4" style={{ height: '400px' }}>
+            <div className="bg-white dark:bg-gray-400 rounded shadow-md h-full overflow-hidden">
               {pdfObjectUrl && (
                 <iframe
                   ref={iframeRef}
@@ -289,8 +289,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
           </div>
           {/* Page Selector*/}
           {pagesText.length > 0 && (
-            <div className="p-4 bg-white rounded-lg shadow">
-              <label className="block font-semibold text-gray-700 mb-2">
+            <div className="p-4 bg-white dark:bg-gray-400 rounded-lg shadow">
+              <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Start reading from page:
               </label>
 
@@ -301,7 +301,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
                   setSelectedPage(pageIndex);
                   setExtractedText(pagesText[pageIndex]);
                 }}
-                className="w-full border p-3 rounded bg-gray-800"
+                className="w-full border p-3 rounded bg-gray-800 dark:bg-gray-600"
               >
                 {pagesText.map((_, i) => (
                   <option key={i} value={i} className="text-white">
@@ -332,8 +332,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
       
       {/* Status message */}
       {!fullPDFText && !isExtracting && !error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-800 text-sm">
+        <div className="bg-yellow-50 border border-yellow-200 dark:bg-yellow-600 dark:border-yellow-500 rounded-lg p-4">
+          <p className="text-yellow-800 text-sm dark:text-yellow-200">
             No text could be extracted from this PDF. It may be a scanned document or image-based PDF.
           </p>
         </div>
@@ -341,13 +341,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
 
       {/* Extracted Text Preview -- Preview the full pdf  */}
       {fullPDFText && (
-        <div className="bg-white rounded-lg shadow-lg p-4">
+        <div className="bg-white dark:bg-gray-400 rounded-lg shadow-lg p-4">
           <details className="cursor-pointer">
-            <summary className="font-semibold text-gray-700 mb-2 flex items-center justify-between">
+            <summary className="font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
               <span>Full PDF Text ({fullPDFText.split(' ').length} words, {pagesText.length} pages)</span>
               <span className="text-sm text-gray-500">Click to expand</span>
             </summary>
-            <div className="mt-2 p-4 bg-gray-50 rounded border text-sm text-gray-600 max-h-60 overflow-auto whitespace-pre-wrap">
+            <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-600 rounded border text-sm text-gray-600 dark:text-gray-300 max-h-60 overflow-auto whitespace-pre-wrap">
               {fullPDFText}
             </div>
           </details>
