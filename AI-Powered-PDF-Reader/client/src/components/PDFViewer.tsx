@@ -67,7 +67,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         let id: string;
         try {
           id = await uploadPDFToBackend(pdfData.file);
-          console.log('PDF uploaded to backend, ID:', id);
+          // console.log('PDF uploaded to backend, ID:', id);
         } catch (uploadError) {
           console.warn('Backend upload failed, continuing in offline mode:', uploadError);
           id = 'local-' + Date.now();
@@ -150,7 +150,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('currentPDF', JSON.stringify(toSave));
-      console.log('Saved to localStorage');
+      // console.log('Saved to localStorage');
     } catch (err) {
       console.error('Failed to save to localStorage:', err);
     }
