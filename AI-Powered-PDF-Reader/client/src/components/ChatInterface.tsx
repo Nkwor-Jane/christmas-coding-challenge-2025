@@ -131,7 +131,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg flex flex-col h-[600px]">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg flex flex-col h-[600px]" data-pdf-context={pdfContext}>
       {/* Header */}
       <div className="bg-gradient-to-r from-violet-600  to-indigo-600 text-white dark:text-gray-300 p-4 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
         ) : (
           <>
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-3 ${

@@ -20,6 +20,7 @@ interface PDFData {
 // Define props interface
 interface PDFViewerProps {
   pdfData: PDFData | null;
+  pdfId?: string;
   onClose: () => void;
   onTextExtracted?: (text: string) => void;
   onPDFIdReceived?: (pdfId: string) => void;

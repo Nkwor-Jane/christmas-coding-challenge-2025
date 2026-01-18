@@ -145,6 +145,7 @@ function App() {
         ) : (
           <PDFViewer 
             pdfData={pdfData}
+            pdfId={pdfId ?? undefined} 
             onClose={handleClose}
             onPDFIdReceived={handlePDFIdReceived}
           />
