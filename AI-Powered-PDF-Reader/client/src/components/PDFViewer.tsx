@@ -3,12 +3,11 @@ import { FileText, X, AlertCircle } from 'lucide-react';
 import AudioControls from './AudioControls';
 
 import * as pdfjsLib from 'pdfjs-dist';
-import { pdfWorkerUrl }from '../utils/pdfWorker';
+import { pdfWorkerUrl } from '../utils/pdfWorker';
 import ChatInterface from './ChatInterface';
 
 // Enable worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-
 
 // Define types for the PDF data
 interface PDFData {
@@ -37,71 +36,74 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [fullPDFText, setFullPDFText] = useState<string>('');
   const [pdfId, setPdfId] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
+  // Process PDF when pdfData changes
+  useEffect(() => {
+    if (!pdfData?.file) return;
 
-    useEffect(() => {
-    if (pdfData?.file) {
-      // Create object URL for the PDF file
+    const processPDF = async () => {
       const objectUrl = URL.createObjectURL(pdfData.file);
       setPdfObjectUrl(objectUrl);
-      
-      setIsExtracting(true);
 
-      // Upload PDF to backend and extract text in parallel
-      Promise.all([
-        uploadPDFToBackend(pdfData.file),
-        extractPDFText(pdfData.file)
-      ])
-        .then(([id, { pages }]) => {
-          // Handle PDF upload
-          setPdfId(id);
-          // console.log('PDF uploaded, ID:', id);
-          
-          // Notify parent component
-          if (onPDFIdReceived) {
-            onPDFIdReceived(id);
-          }
+      try {
+        setIsProcessing(true);
+        setIsExtracting(true);
 
-          // Handle text extraction
-          setPagesText(pages);
-          setExtractedText(pages[0]);
-          
-          const combinedText = pages.map((text, idx) => 
-            `--- Page ${idx + 1} ---\n\n${text}`
-          ).join('\n\n');
-          setFullPDFText(combinedText);
+        const { pages } = await extractPDFText(pdfData.file);
 
-          // Notify parent of extracted text
-          if (onTextExtracted) {
-            onTextExtracted(combinedText);
-          }
+        setPagesText(pages);
+        setExtractedText(pages[0]);
 
-          // Save to localStorage for persistence
-          saveToLocalStorage({
-            pdfId: id,
-            name: pdfData.name,
-            size: pdfData.size,
-            pages: pages.length,
-            fullText: combinedText
-          });
-        })
-        .catch((err) => {
-          console.error('Error processing PDF:', err);
-          setError('Failed to process PDF.');
-        })
-        .finally(() => {
-          setIsLoading(false);
-          setIsExtracting(false);
-        });
+        const combinedText = pages
+          .map((text, idx) => `--- Page ${idx + 1} ---\n\n${text}`)
+          .join('\n\n');
+
+        setFullPDFText(combinedText);
+
+        // Notify parent of extracted text
+        onTextExtracted?.(combinedText);
+
+        let id: string;
+        try {
+          id = await uploadPDFToBackend(pdfData.file);
+          console.log('PDF uploaded to backend, ID:', id);
+        } catch (uploadError) {
+          console.warn('Backend upload failed, continuing in offline mode:', uploadError);
+          id = 'local-' + Date.now();
+        }
+
+        setPdfId(id);
+        onPDFIdReceived?.(id);
         
+        saveToLocalStorage({ 
+          pdfId: id, 
+          name: pdfData.name, 
+          size: pdfData.size, 
+          pages: pages.length, 
+          fullText: combinedText 
+        });
+
+      } catch (err) {
+        console.error('Error processing PDF:', err);
+        setError('Failed to process PDF');
+      } finally {
+        setIsExtracting(false);
+        setIsLoading(false);
+        setIsProcessing(false);
+      }
+
+      // Cleanup function
       return () => {
         URL.revokeObjectURL(objectUrl);
       };
-    }
-  }, [pdfData, onTextExtracted, onPDFIdReceived]);
+    };
 
+    processPDF();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdfData]);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (only once)
   useEffect(() => {
     const loadSavedPDF = () => {
       const savedPDF = localStorage.getItem('currentPDF');
@@ -131,7 +133,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
     };
 
     loadSavedPDF();
-  }, [pdfData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   // Save to localStorage
   const saveToLocalStorage = (data: {
@@ -147,6 +150,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('currentPDF', JSON.stringify(toSave));
+      console.log('Saved to localStorage');
     } catch (err) {
       console.error('Failed to save to localStorage:', err);
     }
@@ -157,7 +161,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('http://localhost:8000/api/pdf/upload', {
+    const response = await fetch('https://christmas-coding-challenge-2025.onrender.com/api/pdf/upload', {
       method: 'POST',
       body: formData
     });
@@ -184,23 +188,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
       let text = '';
       let lastX = 0;
 
-      for (const item of content.items as any[]){
-        const str =  item.str;
-        //Detetct spacing
+      for (const item of content.items as any[]) {
+        const str = item.str;
         const x = item.transform[4];
         const isSpace = Math.abs(x - lastX) > 5;
 
         if (isSpace) text += ' ';
-
         text += str;
         lastX = x;
       }
 
       text = text
-        .replace(/\s+([.,!?;:])/g, '$1')      // remove space before punctuation
-        .replace(/([({[])\s+/g, '$1')         // remove space after opening bracket
-        .replace(/\s+([)}\]])/g, '$1')        // remove space before closing bracket
-        .replace(/\s{2,}/g, ' ')              // collapse double spaces
+        .replace(/\s+([.,!?;:])/g, '$1')
+        .replace(/([({[])\s+/g, '$1')
+        .replace(/\s+([)}\]])/g, '$1')
+        .replace(/\s{2,}/g, ' ')
         .trim();
 
       pages.push(text);
@@ -218,17 +220,18 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
   };
 
   const handleClose = () => {
-    // Clear localStorage when closing
     localStorage.removeItem('currentPDF');
     onClose();
   };
 
   if (!pdfData) return null;
 
+  const isReady = !!fullPDFText && !isProcessing && !error;
+
   return (
     <div className="space-y-4">
       {/* PDF Viewer Section */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -250,24 +253,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         {/* PDF Content Area */}
         <div className="relative">
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-10">
               <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                <p className="text-gray-600">Loading PDF...</p>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {isExtracting ? 'Extracting text...' : 'Loading PDF...'}
+                </p>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="p-8 bg-red-50 flex items-center justify-center gap-3">
-              <AlertCircle className="w-6 h-6 text-red-600" />
-              <p className="text-red-600">{error}</p>
+            <div className="p-8 bg-red-50 dark:bg-red-900 flex items-center justify-center gap-3">
+              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <p className="text-red-600 dark:text-red-300">{error}</p>
             </div>
           )}
 
           {/* PDF Display */}
           <div className="bg-gray-100 dark:bg-gray-700 p-4" style={{ height: '400px' }}>
-            <div className="bg-white dark:bg-gray-400 rounded shadow-md h-full overflow-hidden">
+            <div className="bg-white dark:bg-gray-600 rounded shadow-md h-full overflow-hidden">
               {pdfObjectUrl && (
                 <iframe
                   ref={iframeRef}
@@ -284,16 +289,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
                   }}
                 />
               )}
-
             </div>
           </div>
-          {/* Page Selector*/}
+
+          {/* Page Selector */}
           {pagesText.length > 0 && (
-            <div className="p-4 bg-white dark:bg-gray-400 rounded-lg shadow">
+            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
               <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Start reading from page:
               </label>
-
               <select
                 value={selectedPage}
                 onChange={(e) => {
@@ -301,10 +305,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
                   setSelectedPage(pageIndex);
                   setExtractedText(pagesText[pageIndex]);
                 }}
-                className="w-full border p-3 rounded bg-gray-800 dark:bg-gray-600"
+                className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {pagesText.map((_, i) => (
-                  <option key={i} value={i} className="text-white">
+                  <option key={i} value={i}>
                     Page {i + 1}
                   </option>
                 ))}
@@ -314,40 +318,50 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfData, onClose, onTextExtracted
         </div>
       </div>
 
-      {/* Audio Controls Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {extractedText && (
-        <AudioControls 
-          text={extractedText} 
-        />
+      {/* Audio Controls and Chat Section */}
+      {isReady && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <AudioControls text={extractedText} />
+          <ChatInterface
+            pdfContext={fullPDFText}
+            pdfName={pdfData.name}
+            pdfId={pdfId ?? undefined}
+            isEnabled
+          />
+        </div>
       )}
 
-       <ChatInterface 
-          pdfContext={fullPDFText}
-          pdfName={pdfData.name}
-          pdfId={pdfId || undefined} 
-          isEnabled={!!fullPDFText && !isExtracting}
-        />
-      </div>
+      {/* Processing Indicator */}
+      {isProcessing && (
+        <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-6 text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mb-3"></div>
+          <p className="text-blue-800 dark:text-blue-200 font-medium">
+            Processing PDF and setting up features...
+          </p>
+          <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+            This may take a moment for large PDFs
+          </p>
+        </div>
+      )}
       
-      {/* Status message */}
-      {!fullPDFText && !isExtracting && !error && (
-        <div className="bg-yellow-50 border border-yellow-200 dark:bg-yellow-600 dark:border-yellow-500 rounded-lg p-4">
-          <p className="text-yellow-800 text-sm dark:text-yellow-200">
+      {/* Status Messages */}
+      {!fullPDFText && !isProcessing && !error && (
+        <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+          <p className="text-yellow-800 dark:text-yellow-200 text-sm">
             No text could be extracted from this PDF. It may be a scanned document or image-based PDF.
           </p>
         </div>
       )}
 
-      {/* Extracted Text Preview -- Preview the full pdf  */}
-      {fullPDFText && (
-        <div className="bg-white dark:bg-gray-400 rounded-lg shadow-lg p-4">
+      {/* Extracted Text Preview */}
+      {fullPDFText && !isProcessing && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
           <details className="cursor-pointer">
-            <summary className="font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+            <summary className="font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between hover:text-blue-600 dark:hover:text-blue-400">
               <span>Full PDF Text ({fullPDFText.split(' ').length} words, {pagesText.length} pages)</span>
-              <span className="text-sm text-gray-500">Click to expand</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Click to expand</span>
             </summary>
-            <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-600 rounded border text-sm text-gray-600 dark:text-gray-300 max-h-60 overflow-auto whitespace-pre-wrap">
+            <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 max-h-60 overflow-auto whitespace-pre-wrap">
               {fullPDFText}
             </div>
           </details>

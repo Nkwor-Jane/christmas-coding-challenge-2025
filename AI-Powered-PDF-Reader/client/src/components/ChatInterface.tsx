@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, MessageSquare, Trash2 } from 'lucide-react';
 
 interface Message {
+  id:string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
@@ -15,6 +16,7 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  pdfContext,
   pdfName,
   pdfId,
   isEnabled = true
@@ -26,10 +28,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when message count changes
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages.length]);
+
 
   // Focus input on mount
   useEffect(() => {
@@ -42,6 +45,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     if (!inputMessage.trim() || isLoading || !isEnabled) return;
 
     const userMessage: Message = {
+      id: crypto.randomUUID(),
       role: 'user',
       content: inputMessage.trim(),
       timestamp: new Date()
@@ -54,7 +58,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     try {
       if (pdfId) {
-        const response = await fetch('http://localhost:8000/api/chat/', {
+        const response = await fetch('https://christmas-coding-challenge-2025.onrender.com/api/chat/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -77,6 +81,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         const data = await response.json();
         
         const assistantMessage: Message = {
+          id: crypto.randomUUID(),
           role: 'assistant',
           content: data.response,
           timestamp: new Date()
@@ -174,7 +179,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <>
             {messages.map((message, index) => (
               <div
-                key={index}
+                key={message.id}
                 className={`flex gap-3 ${
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
@@ -253,7 +258,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             onKeyDown={handleKeyDown}
             placeholder="Ask a question about the PDF..."
             className="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-            rows={1}
+            rows={2}
             disabled={isLoading}
             style={{
               minHeight: '44px',

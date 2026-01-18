@@ -48,12 +48,6 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    if (pdfId) {
-      console.log('Current pdfId:', pdfId);
-    }
-  }, [pdfId]);
-
 
   const handlePDFUpload = (data: PDFData): void => {
     setPdfData(data);
@@ -93,7 +87,13 @@ function App() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-6">
+    <div className="
+        min-h-screen
+        bg-gradient-to-br from-blue-50 to-indigo-100
+        dark:from-gray-900 dark:to-gray-800
+        text-gray-900 dark:text-gray-100
+        transition-colors duration-300
+        p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     debug: bool = True
     
     # CORS
-    allowed_origins: List[str] = ["http://localhost:5173"]
+    allowed_origins: List[str] = ["http://localhost:5173", "https://christmas-coding-challenge-2025.onrender.com"]
     
     # File Upload
     max_file_size: int = 10485760  # MAX 10MB

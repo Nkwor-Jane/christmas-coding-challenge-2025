@@ -66,7 +66,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
     try {
       setIsLoadingAudio(true);
       
-      const response = await fetch('http://localhost:8000/api/tts/generate', {
+      const response = await fetch('https://christmas-coding-challenge-2025.onrender.com/api/tts/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       </div>
 
       {/* Voice Provider Toggle */}
-      <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-200 rounded-lg">
+      <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
         <Mic className="w-5 h-5 text-gray-600 dark:text-gray-400" />
         <div className="flex-1">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -285,9 +285,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
               type="checkbox"
               checked={useElevenLabs}
               onChange={(e) => setUseElevenLabs(e.target.checked)}
-              className="w-4 h-4 text-blue-600 dark:text-blue-100 rounded focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-gray-600"
+              className="w-4 h-4 text-blue-600 dark:text-blue-500 rounded focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-gray-600"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-100">
               Use Premium Voice (ElevenLabs)
             </span>
           </label>
@@ -301,7 +301,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
           <select
             value={selectedVoice}
             onChange={(e) => setSelectedVoice(e.target.value)}
-            className="w-full p-2 border border-gray-300 bg-gray-400 dark:border-gray-600 dark:bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            className="w-full p-2 border border-gray-300 bg-gray-400 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
           >
             {elevenLabsVoices.map((voice) => (
               <option key={voice.id} value={voice.id}>
@@ -376,7 +376,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({ text }) => {
       </div>
 
       {/* Speed and Volume Controls */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 align-items-center">
         {/* Speed Control */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700  dark:text-gray-200 flex items-center justify-between">
