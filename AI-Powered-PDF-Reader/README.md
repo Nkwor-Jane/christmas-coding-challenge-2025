@@ -23,6 +23,8 @@ An intelligent PDF reader that brings your documents to life with text-to-speech
 
 ### Installation
 
+## Frontend
+
 ```bash
 # Clone the repository
 git clone https://github.com/Nkwor-Jane/christmas-coding-challenge-2025
@@ -45,6 +47,24 @@ npm run dev
 
 Visit `http://localhost:5173` to see the app in action.
 
+## Backend
+```
+# Navigate to backend directory
+cd server
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the server
+uvicorn app.main:app --reload
+```
+
+For Swagger documentation, visit `http://localhost:8000/docs`
+
 ## 🎯 How to Use
 
 1. **Upload a PDF** - Click the upload button or drag and drop a PDF file
@@ -62,30 +82,9 @@ Visit `http://localhost:5173` to see the app in action.
 - **Web Speech API** - Text-to-speech functionality
 - **Anthropic Claude API** - AI-powered question answering
 - **Lucide React** - Beautiful icon library
-
-## 📁 Project Structure
-
-AI-Powered-PDF-Reader/
-├── src/
-│   ├── components/
-│   │   ├── PDFUploader.jsx      # File upload component
-│   │   ├── PDFViewer.jsx        # PDF display component
-│   │   ├── AudioControls.jsx    # TTS playback controls
-│   │   ├── ChatInterface.jsx    # AI chat UI
-│   │   └── ReadingProgress.jsx  # Progress indicator
-│   ├── hooks/
-│   │   ├── usePDFReader.js      # PDF text extraction logic
-│   │   ├── useTextToSpeech.js   # TTS functionality
-│   │   └── useAIChat.js         # AI integration
-│   ├── utils/
-│   │   ├── pdfParser.js         # PDF parsing utilities
-│   │   └── apiClient.js         # API communication
-│   ├── App.jsx
-│   └── main.jsx
-├── public/
-├── .env.example
-├── package.json
-└── README.md
+- **FastAPI** - High-performance Python web framework for APIs
+- **Render** – Cloud hosting for the backend service
+- **Netlify** - Cloud hosting for frontend service
 
 ## 🎨 Features in Detail
 
@@ -93,12 +92,11 @@ AI-Powered-PDF-Reader/
 
 - Natural voice synthesis using Web Speech API
 - Adjustable reading speed (0.5x to 2x)
-- Sentence-by-sentence highlighting
 
 ### AI Chat Assistant
 
 - Context-aware responses based on PDF content
-- Conversation history maintained throughout session
+- Conversation history is maintained throughout the session
 - Support for follow-up questions
 - Citation of relevant PDF sections
 
@@ -106,8 +104,7 @@ AI-Powered-PDF-Reader/
 
 - Support for text-based PDFs
 - Automatic text extraction and chunking
-- Page navigation and bookmarking
-- Search functionality within documents
+- Page navigation
 
 ## 🤝 Contributing
 
