@@ -134,4 +134,4 @@ Nkwor Jane
 
 Project Link: [https://github.com/Nkwor-Jane/christmas-coding-challenge-2025](https://github.com/Nkwor-Jane/christmas-coding-challenge-2025)
 
-**Built with ❤️ for the WCC Christmas Coding Challenge 2024**
+**Built with ❤️ for the WCC Christmas Coding Challenge 2025**
