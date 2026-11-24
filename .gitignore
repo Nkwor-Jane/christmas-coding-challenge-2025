@@ -1,0 +1,11 @@
+backend/.venv/
+backend/storage/
+backend/reading.db
+backend/.pytest_cache/
+backend/.env
+**/__pycache__/
+**/*.pyc
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+.DS_Store
